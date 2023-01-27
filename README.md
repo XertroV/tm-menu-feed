@@ -1,4 +1,6 @@
-#
+# Menu Feed
+
+Demo / test plugin for MLHook's menu integration. No exports yet.
 
 License: Public Domain
 
