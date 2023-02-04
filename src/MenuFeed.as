@@ -1,20 +1,33 @@
-class _MenuState : MenuFeed::MenuState_V1 {
+namespace MenuFeed {
+    const string get_ParentPage() { return menuStateFeed.ParentPage; }
+    const string get_CurrentPage() { return menuStateFeed.CurrentPage; }
+    bool get_PageChanged() { return menuStateFeed.PageChanged; }
+}
+
+_MenuState@ menuStateFeed = _MenuState();
+
+class _MenuState : MLHook::HookMLEventsByType {
     bool _initialized = false;
     string _currPage;
     string _parentPage;
     string PageUID = "MenuState";
+    bool PageChanged = false;
 
     _MenuState() {
-        super();
+        super("Router_RouteUpdated");
         startnew(CoroutineFunc(this.MainCoro));
     }
 
-    bool get_Initialized() const override {
+    bool get_Initialized() const {
         return _initialized;
     }
 
-    const string get_CurrentPage() const override {
+    const string get_CurrentPage() const {
         return _currPage;
+    }
+
+    const string get_ParentPage() const {
+        return _parentPage;
     }
 
     MLHook::PendingEvent@[] pendingEvents;
@@ -26,6 +39,7 @@ class _MenuState : MenuFeed::MenuState_V1 {
     void MainCoro() {
         while (true) {
             yield();
+            PageChanged = false;
             for (uint i = 0; i < pendingEvents.Length; i++) {
                 ProcessEvent(pendingEvents[i]);
             }
@@ -43,8 +57,9 @@ class _MenuState : MenuFeed::MenuState_V1 {
             _initialized = true;
             _currPage = evt.data[0];
             _parentPage = evt.data.Length > 1 ? string(evt.data[1]) : "";
-            print("Set current page: " + _currPage);
-            print("Set previous page: " + _parentPage);
+            PageChanged = true;
+            // trace("Set current page: " + _currPage);
+            // trace("Set previous page: " + _parentPage);
         }
     }
 }
